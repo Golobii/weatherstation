@@ -6,7 +6,13 @@ import (
 	"slices"
 )
 
-var postaje map[string]Postaja
+var (
+	postaje map[string]Postaja
+
+	minTemp float64 = -50
+	maxTemp float64 = 50
+	nSamples int = 3
+)
 
 type Postaja struct {
 	ime     string
@@ -16,6 +22,10 @@ type Postaja struct {
 
 func DodajPostajo(ime string, oznaka string, kraj string) bool {
 	if len(ime) < 1 || len(oznaka) < 1 || len(kraj) < 1 {
+		return false
+	}
+	_, ok := postaje[oznaka]
+	if ok {
 		return false
 	}
 
@@ -29,13 +39,19 @@ func DodajPostajo(ime string, oznaka string, kraj string) bool {
 	return true
 }
 
+func Init(minTemperature float64, maxTemperature float64, numberOfSamples int) {
+	minTemp = minTemperature
+	maxTemp = maxTemperature
+	nSamples = numberOfSamples
+}
+
 func dodajMeritev(oznaka string, temperatura float64) error {
 	postaja, ok := postaje[oznaka]
 	if !ok {
 		return errors.New("Postaja ne obstaja")
 	}
 
-	if temperatura < -50 || temperatura > 50 {
+	if temperatura < minTemp || temperatura > maxTemp {
 		return errors.New("Nepravilna temperatura")
 	}
 
@@ -46,7 +62,7 @@ func dodajMeritev(oznaka string, temperatura float64) error {
 
 func statistika(oznaka string) (najnizja, najvisja, povprecna float64, ok bool) {
 	postaja, ok := postaje[oznaka]
-	if !ok || len(postaja.meritve) < 3 {
+	if !ok || len(postaja.meritve) < nSamples {
 		return 0, 0, 0, false
 	}
 
